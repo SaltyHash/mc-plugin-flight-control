@@ -1,0 +1,37 @@
+name: FlightControl
+main: info.saltyhash.flightcontrol.FlightControl
+version: 1.0.1
+author: Austin Bowen <austin.bowen.314@gmail.com>
+softdepend: [Vault]
+commands:
+  fc:
+    description: Display all FlightControl commands
+    usage: /<command>
+  fc reload:
+    description: Reload config and apply new settings
+    usage: /<command>
+  fly:
+    description: Toggle / set flight mode
+    usage: /<command> [player] [on | off]
+permissions:
+  fc.*:
+    description: Gives all permissions for FlightControl
+    children:
+      fc.reload:
+        default: op
+        description: Reload config
+      fc.fly.*:
+        description: Gives all flight permissions
+        children:
+          fc.fly.allow:
+            default: true
+            description: Allow player to fly
+          fc.fly.disable:
+            default: true
+            description: Disable flight mode
+          fc.fly.enable:
+            default: true
+            description: Enable flight mode
+          fc.fly.others:
+            default: op
+            description: Allow player to control flight mode for other players

@@ -1,0 +1,94 @@
+# FlightControl Configuration
+# 
+# The default configuration values give a completely normal flying experience.
+
+# The ability to start flying
+flight_mode:
+  
+  # Economy
+  cost:
+    # How much to charge player for enabling / disabling flight mode
+    enable : 0.0
+    disable: 0.0
+  
+  # Turn on flight mode when player joins the game
+  enable_on_join: true
+
+# The current state of flying
+flying:
+  
+  # Control ascension and descension
+  # If ascension is disabled, this gives a hovering effect
+  allow_ascend:  true
+  allow_descend: true
+  
+  # Allow sprinting while flying, which increases your speed
+  allow_sprint: true
+  
+  # Minimum balance required to allow flying
+  balance_min: 0.0
+  
+  # Charge player for certain actions
+  cost:
+    
+    # How much to charge on starting / stopping flying
+    on_start: 0.0
+    on_stop : 0.0
+    
+    # How much to charge player per tick while flying
+    per_tick: 0.0
+  
+  # Make player stop flying when taking damage
+  disable_on_damage: false
+  
+  # Make player unable to fly while starving
+  disable_while_starving: false
+  
+  # Exhaustion examples:
+  # Jumping: 0.2    Attacking: 0.3    Sprinting jump: 0.8
+  exhaustion:
+    
+    # Exhaustion increase when starting to fly
+    # Default: 0.0    Recommended: 1.0
+    on_fly: 0.0
+    
+    # Exhaustion increase for each second while flying
+    # Default: 0.0    Recommended: 0.1
+    per_second_while_flying: 0.0
+  
+  # Make player mine faster to account for reduced mining speed while flying
+  # Each level above 0 is an additional 20% faster than normal
+  # Default: 0    Haste IV: 4    Non-flying equivalent: 20
+  # If haste is > 4, the player's hand will appear to not be moving
+  haste: 0
+  
+  # Allow normal flying when in creative mode
+  ignore_creative: true
+  
+  # Always flying, unless explicitly disabled by player
+  # Note: If "true", this overrides all settings that disable flying,
+  # such as "disable_on_damage" and "disable_while_starving".
+  persist: false
+  
+  # Flight speed
+  # Default: 0.10    Range: -1.0 to 1.0
+  # Negative values indicate reverse directions.
+  speed: 0.10
+  
+  # Number of ticks allowed to fly before flight is disabled
+  # 0 ticks = never disable; 20 ticks = 1 second; no limit.
+  ticks: 0
+  
+  # Control the time range that players are allowed to fly during
+  # Dawn: 0        Day  : 1000     Midday  : 6000     Min: 0
+  # Dusk: 12000    Night: 14000    Midnight: 18000    Max: 24000
+  time:
+    # Default: 0 - 24000.  Allows flying during all times.
+    start: 0
+    stop : 24000
+  
+  # Control flying during certain weather conditions
+  weather:
+    clear  : true
+    rain   : true
+    thunder: true
