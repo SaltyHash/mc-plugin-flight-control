@@ -11,29 +11,31 @@ import org.bukkit.scheduler.BukkitRunnable;
  * Task to give all flying players haste if necessary.
  */
 class HasteTask extends BukkitRunnable {
-    private final int haste_level;
-    private final boolean ignore_creative;
+    private final int hasteLevel;
+    private final boolean ignoreCreative;
     private final int ticks;
 
-    public HasteTask(int haste_level, boolean ignore_creative, int ticks) {
-        this.haste_level = haste_level;
-        this.ignore_creative = ignore_creative;
+    public HasteTask(final int hasteLevel, final boolean ignoreCreative, final int ticks) {
+        this.hasteLevel = hasteLevel;
+        this.ignoreCreative = ignoreCreative;
         this.ticks = ticks;
     }
 
     public void run() {
-        if ((this.haste_level <= 0) || (this.ticks <= 0)) return;
+        if (hasteLevel <= 0 || ticks <= 0) return;
+
         // Iterate over each player
-        for (Player player : Bukkit.getOnlinePlayers()) {
+        for (final Player player : Bukkit.getOnlinePlayers()) {
             // Ignore player if not flying, or if in creative mode
             if (!player.isFlying() ||
-                    ((player.getGameMode() == GameMode.CREATIVE) && this.ignore_creative))
+                    ((player.getGameMode() == GameMode.CREATIVE) && ignoreCreative))
                 continue;
+
             // Give player haste
             player.addPotionEffect(
                     new PotionEffect(
                             PotionEffectType.FAST_DIGGING,
-                            this.ticks, this.haste_level - 1, true),
+                            ticks, hasteLevel - 1, true),
                     true);
         }
     }
