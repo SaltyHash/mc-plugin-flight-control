@@ -151,28 +151,28 @@ class FlightControlEventHandler implements Listener {
         // Ignore if in creative mode
         if ((player.getGameMode() == GameMode.CREATIVE) && flyingIgnoreCreative) return;
 
-        final double l_fm_y = event.getFrom().getY();
+        final double fromY = event.getFrom().getY();
         // TODO: Clone?
 //        final Location l_to = event.getTo().clone();
-        final Location l_to = event.getTo();
-        if (l_to == null) return;
-        final double l_to_y = l_to.getY();
+        final Location toLocation = event.getTo();
+        if (toLocation == null) return;
+        final double toY = toLocation.getY();
 
         // Ascending
-        if (l_to_y > l_fm_y) {
+        if (toY > fromY) {
             // Player not allowed to ascend?
             if (!flyingAllowAscend) {
-                l_to.setY(l_fm_y);
-                event.setTo(l_to);
+                toLocation.setY(fromY);
+                event.setTo(toLocation);
             }
         }
 
         // Descending
-        else if (l_to_y < l_fm_y) {
+        else if (toY < fromY) {
             // Player not allowed to descend?
             if (!flyingAllowDescend) {
-                l_to.setY(l_fm_y);
-                event.setTo(l_to);
+                toLocation.setY(fromY);
+                event.setTo(toLocation);
             }
         }
     }
