@@ -1,5 +1,5 @@
 name: FlightControl
-main: FlightControl
+main: me.saltyhash.flightcontrol.FlightControl
 version: 1.0.1
 author: Austin Bowen <austin.bowen.314@gmail.com>
 api-version: "1.13"
