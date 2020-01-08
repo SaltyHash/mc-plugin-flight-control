@@ -7,18 +7,20 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
-/** Task to give all flying players haste if necessary. */
+/**
+ * Task to give all flying players haste if necessary.
+ */
 class HasteTask extends BukkitRunnable {
-    private final int     haste_level;
+    private final int haste_level;
     private final boolean ignore_creative;
-    private final int     ticks;
-    
+    private final int ticks;
+
     public HasteTask(int haste_level, boolean ignore_creative, int ticks) {
-        this.haste_level     = haste_level;
+        this.haste_level = haste_level;
         this.ignore_creative = ignore_creative;
-        this.ticks           = ticks;
+        this.ticks = ticks;
     }
-    
+
     public void run() {
         if ((this.haste_level <= 0) || (this.ticks <= 0)) return;
         // Iterate over each player

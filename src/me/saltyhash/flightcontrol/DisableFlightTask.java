@@ -5,14 +5,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-/** Task to disable a player from flying. */
+/**
+ * Task to disable a player from flying.
+ */
 class DisableFlightTask extends BukkitRunnable {
     private final Player player;
-    
+
     public DisableFlightTask(Player player) {
         this.player = player;
     }
-    
+
     public void run() {
         // Disable flight if necessary
         if ((this.player != null) && this.player.isFlying()) {
