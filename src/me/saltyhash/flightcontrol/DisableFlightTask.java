@@ -11,14 +11,14 @@ import org.bukkit.scheduler.BukkitRunnable;
 class DisableFlightTask extends BukkitRunnable {
     private final Player player;
 
-    public DisableFlightTask(Player player) {
+    public DisableFlightTask(final Player player) {
         this.player = player;
     }
 
     public void run() {
         // Disable flight if necessary
         if ((this.player != null) && this.player.isFlying()) {
-            PlayerToggleFlightEvent event = new PlayerToggleFlightEvent(player, false);
+            final PlayerToggleFlightEvent event = new PlayerToggleFlightEvent(player, false);
             Bukkit.getPluginManager().callEvent(event);
             if (!event.isCancelled()) this.player.setFlying(false);
         }
