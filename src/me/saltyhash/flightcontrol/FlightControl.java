@@ -34,11 +34,11 @@ public class FlightControl extends JavaPlugin {
 
     public long getTicks() {
         /* Returns the number of ticks since the plugin was loaded. */
-        return this.tickCounter.ticks;
+        return tickCounter.ticks;
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(final CommandSender sender, final Command cmd, final String label, final String[] args) {
         /* Called when a command is issued. */
         // Command: "fc ..."
         if (cmd.getName().equalsIgnoreCase("fc")) {
@@ -57,9 +57,9 @@ public class FlightControl extends JavaPlugin {
                             "You cannot reload the FlightControl config");
                     return true;
                 }
-                this.reload();
+                reload();
                 sender.sendMessage("FlightControl config reloaded");
-                this.getLogger().info(sender.getName() + " reloaded config");
+                getLogger().info(sender.getName() + " reloaded config");
                 return true;
             }
 
@@ -81,7 +81,7 @@ public class FlightControl extends JavaPlugin {
                     sender.sendMessage("Must be a player");
                     return true;
                 }
-                Player player = (Player) sender;
+                final Player player = (Player) sender;
 
                 // Toggle flight mode
                 // - Flight mode is enabled
@@ -92,12 +92,12 @@ public class FlightControl extends JavaPlugin {
                         return true;
                     }
                     // Charge player.  Insufficient funds?
-                    if (this.econMgr.charge(player,
-                            this.getConfig().getDouble("flight_mode.cost.disable"), false) == 1) {
+                    if (econMgr.charge(player,
+                            getConfig().getDouble("flight_mode.cost.disable"), false) == 1) {
                         player.sendMessage("You cannot afford to disable flight mode");
                         return true;
                     }
-                    this.setFlightMode(player, false);
+                    setFlightMode(player, false);
                     player.sendMessage("Flight mode " + ChatColor.DARK_RED + "disabled");
                 }
 
@@ -109,12 +109,12 @@ public class FlightControl extends JavaPlugin {
                         return true;
                     }
                     // Charge player.  Insufficient funds?
-                    if (this.econMgr.charge(player,
-                            this.getConfig().getDouble("flight_mode.cost.enable"), false) == 1) {
+                    if (econMgr.charge(player,
+                            getConfig().getDouble("flight_mode.cost.enable"), false) == 1) {
                         player.sendMessage("You cannot afford to enable flight mode");
                         return true;
                     }
-                    this.setFlightMode(player, true);
+                    setFlightMode(player, true);
                     player.sendMessage("Flight mode " + ChatColor.DARK_GREEN + "enabled");
                 }
                 return true;
@@ -127,20 +127,20 @@ public class FlightControl extends JavaPlugin {
                     sender.sendMessage("Must be a player");
                     return true;
                 }
-                Player player = (Player) sender;
+                final Player player = (Player) sender;
                 // Check permissions
                 if (!player.hasPermission("fc.fly.enable")) {
                     player.sendMessage("Not allowed to enable flight mode");
                     return true;
                 }
                 // Charge player.  Insufficient funds?
-                if (this.econMgr.charge(player,
-                        this.getConfig().getDouble("flight_mode.cost.enable"), false) == 1) {
+                if (econMgr.charge(player,
+                        getConfig().getDouble("flight_mode.cost.enable"), false) == 1) {
                     player.sendMessage("You cannot afford to enable flight mode");
                     return true;
                 }
                 // Turn flight mode on
-                this.setFlightMode(player, true);
+                setFlightMode(player, true);
                 player.sendMessage("Flight mode " + ChatColor.DARK_GREEN + "enabled");
                 return true;
             }
@@ -152,20 +152,20 @@ public class FlightControl extends JavaPlugin {
                     sender.sendMessage("Must be a player");
                     return true;
                 }
-                Player player = (Player) sender;
+                final Player player = (Player) sender;
                 // Check permissions
                 if (!player.hasPermission("fc.fly.disable")) {
                     player.sendMessage("Not allowed to disable flight mode");
                     return true;
                 }
                 // Charge player.  Insufficient funds?
-                if (this.econMgr.charge(player,
-                        this.getConfig().getDouble("flight_mode.cost.disable"), false) == 1) {
+                if (econMgr.charge(player,
+                        getConfig().getDouble("flight_mode.cost.disable"), false) == 1) {
                     player.sendMessage("You cannot afford to disable flight mode");
                     return true;
                 }
                 // Turn flight mode off
-                this.setFlightMode(player, false);
+                setFlightMode(player, false);
                 player.sendMessage("Flight mode " + ChatColor.DARK_RED + "disabled");
                 return true;
             }
@@ -178,10 +178,10 @@ public class FlightControl extends JavaPlugin {
             }
             // Get player specified in command
             Player player = null;
-            String player_name = args[0];
+            final String player_name = args[0];
             // Iterate over each player
-            Player[] players = this.getServer().getOnlinePlayers().toArray(new Player[0]);
-            for (Player p : players) {
+            final Player[] players = getServer().getOnlinePlayers().toArray(new Player[0]);
+            for (final Player p : players) {
                 player = p;
                 if (player.getName().equalsIgnoreCase(player_name)) break;
             }
@@ -197,7 +197,7 @@ public class FlightControl extends JavaPlugin {
                 // - Flight mode is enabled
                 if (player.getAllowFlight()) {
                     // Disable flight mode
-                    this.setFlightMode(player, false);
+                    setFlightMode(player, false);
                     player.sendMessage("Flight mode " + ChatColor.DARK_RED
                             + "disabled" + ChatColor.RESET + " by " + sender.getName());
                     sender.sendMessage("Flight mode " + ChatColor.DARK_RED
@@ -206,7 +206,7 @@ public class FlightControl extends JavaPlugin {
                 // - Flight mode is disabled
                 else {
                     // Enable flight mode
-                    this.setFlightMode(player, true);
+                    setFlightMode(player, true);
                     player.sendMessage("Flight mode " + ChatColor.DARK_GREEN
                             + "enabled" + ChatColor.RESET + " by " + sender.getName());
                     sender.sendMessage("Flight mode " + ChatColor.DARK_GREEN
@@ -218,7 +218,7 @@ public class FlightControl extends JavaPlugin {
             // Command: "/fly [player] on"
             else if (args[1].equalsIgnoreCase("on")) {
                 // Turn flight mode on for player
-                this.setFlightMode(player, true);
+                setFlightMode(player, true);
                 player.sendMessage("Flight mode " + ChatColor.DARK_GREEN
                         + "enabled" + ChatColor.RESET + " by " + sender.getName());
                 sender.sendMessage("Flight mode " + ChatColor.DARK_GREEN
@@ -230,7 +230,7 @@ public class FlightControl extends JavaPlugin {
             else if (args[1].equalsIgnoreCase("off")) {
                 // Turn flight mode off for player
                 player.setFallDistance(0);
-                this.setFlightMode(player, false);
+                setFlightMode(player, false);
                 player.sendMessage("Flight mode " + ChatColor.DARK_RED
                         + "disabled" + ChatColor.RESET + " by " + sender.getName());
                 sender.sendMessage("Flight mode " + ChatColor.DARK_RED
@@ -251,14 +251,14 @@ public class FlightControl extends JavaPlugin {
     @Override
     public void onDisable() {
         /* Called on plugin disable. */
-        this.getLogger().info("Disabled");
+        getLogger().info("Disabled");
     }
 
     @Override
     public void onEnable() {
         /* Called on plugin enable. */
-        Server server = this.getServer();
-        Logger logger = this.getLogger();
+        final Server server = getServer();
+        final Logger logger = getLogger();
 
         // Warn if server is not configured to allow flight
         if (!server.getAllowFlight()) {
@@ -267,32 +267,32 @@ public class FlightControl extends JavaPlugin {
         }
 
         // Start tick counter
-        this.tickCounter = new TickCounter(0L);
-        this.tickCounter.runTaskTimer(this, 0L, 1L);
+        tickCounter = new TickCounter(0L);
+        tickCounter.runTaskTimer(this, 0L, 1L);
 
         // Make economy manager
-        this.econMgr = new EconManager(this);
+        econMgr = new EconManager(this);
 
         // Create and register event handler
-        this.eventHandler = new FlightControlEventHandler(this);
+        eventHandler = new FlightControlEventHandler(this);
         server.getPluginManager().registerEvents(eventHandler, this);
 
         // Set exhaustion and haste tasks to nonexistent
-        this.exhaustionTask = null;
-        this.hasteTask = null;
+        exhaustionTask = null;
+        hasteTask = null;
 
         // This method takes care of much of the initialization,
         // and may be called multiple times.
-        this.reload();
+        reload();
 
         logger.info("Enabled");
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command,
-                                      String alias, String[] args) {
+    public List<String> onTabComplete(final CommandSender sender, final Command command,
+                                      final String alias, final String[] args) {
         /* Request a list of possible tab completions for a command argument. */
-        String cmd_name = command.getName();
+        final String cmd_name = command.getName();
 
         // Command: "/fc"
         if (cmd_name.equalsIgnoreCase("fc")) {
@@ -306,46 +306,46 @@ public class FlightControl extends JavaPlugin {
     /* Reloads the plugin config and takes appropriate action. */
     public void reload() {
         // Reload configuration file
-        this.saveDefaultConfig();
-        this.reloadConfig();
-        FileConfiguration config = this.getConfig();
+        saveDefaultConfig();
+        reloadConfig();
+        final FileConfiguration config = getConfig();
 
         // Reload event handler
-        this.eventHandler.reload();
+        eventHandler.reload();
 
         // Stop previous tasks
-        if (this.exhaustionTask != null)
-            this.exhaustionTask.cancel();
-        if (this.hasteTask != null)
-            this.hasteTask.cancel();
+        if (exhaustionTask != null)
+            exhaustionTask.cancel();
+        if (hasteTask != null)
+            hasteTask.cancel();
 
         // Start exhaustion task, running once every second
-        float exhaustion = (float) config.getDouble(
+        final float exhaustion = (float) config.getDouble(
                 "flying.exhaustion.per_second_while_flying");
         if (exhaustion > 0.0) {
-            ExhaustionTask et = new ExhaustionTask(exhaustion, config.getBoolean("flying.ignore_creative"));
-            this.exhaustionTask = et.runTaskTimer(this, 20L, 20L);
+            final ExhaustionTask et = new ExhaustionTask(exhaustion, config.getBoolean("flying.ignore_creative"));
+            exhaustionTask = et.runTaskTimer(this, 20L, 20L);
         } else
-            this.exhaustionTask = null;
+            exhaustionTask = null;
 
         // Start haste task if necessary, running once every 10 seconds
-        int haste = config.getInt("flying.haste");
+        final int haste = config.getInt("flying.haste");
         if (haste > 0) {
-            HasteTask ht = new HasteTask(haste, config.getBoolean("flying.ignore_creative"), 200);
-            this.hasteTask = ht.runTaskTimer(this, 0L, 200L);
+            final HasteTask ht = new HasteTask(haste, config.getBoolean("flying.ignore_creative"), 200);
+            hasteTask = ht.runTaskTimer(this, 0L, 200L);
         } else
-            this.hasteTask = null;
+            hasteTask = null;
 
         // Apply flying speed to all players
-        Player[] players = this.getServer().getOnlinePlayers().toArray(new Player[0]);
-        for (Player player : players) {
+        final Player[] players = getServer().getOnlinePlayers().toArray(new Player[0]);
+        for (final Player player : players) {
             player.setFlySpeed((float) config.getDouble("flying.speed"));
         }
     }
 
-    public void setFlightMode(Player player, boolean mode) {
+    public void setFlightMode(final Player player, final boolean mode) {
         /* Sets the flight mode of the player safely. */
-        FileConfiguration config = this.getConfig();
+        final FileConfiguration config = getConfig();
 
         // Enable flight mode?
         if (mode) {
