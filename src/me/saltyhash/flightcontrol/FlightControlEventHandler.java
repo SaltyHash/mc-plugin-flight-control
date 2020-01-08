@@ -195,11 +195,11 @@ class FlightControlEventHandler implements Listener {
         // Starting to fly
         if (event.isFlying()) {
 
-            final long world_time = player.getWorld().getTime();
+            final long worldTime = player.getWorld().getTime();
             // Clear: 0    Rain: 1    Thunder: 2
-            int world_weather = 0;
-            if (player.getWorld().isThundering()) world_weather = 2;
-            else if (player.getWorld().hasStorm()) world_weather = 1;
+            int worldWeather = 0;
+            if (player.getWorld().isThundering()) worldWeather = 2;
+            else if (player.getWorld().hasStorm()) worldWeather = 1;
 
             // Check various parameters which may prevent player from flying
             if (
@@ -209,12 +209,12 @@ class FlightControlEventHandler implements Listener {
                             || ((player.getFoodLevel() <= 0)
                             && config.getBoolean("flying.disable_while_starving"))
                             // Is player allowed to fly at this time of day?
-                            || (world_time < flyingTimeStart)
-                            || (world_time > flyingTimeStop)
+                            || (worldTime < flyingTimeStart)
+                            || (worldTime > flyingTimeStop)
                             // Is player allowed to fly in this weather?
-                            || ((world_weather == 0) && !flyingWeatherClear)
-                            || ((world_weather == 1) && !flyingWeatherRain)
-                            || ((world_weather == 2) && !flyingWeatherThunder)
+                            || ((worldWeather == 0) && !flyingWeatherClear)
+                            || ((worldWeather == 1) && !flyingWeatherRain)
+                            || ((worldWeather == 2) && !flyingWeatherThunder)
                             // Player does not have minimum required balance?
                             || econMgr.insufficientFunds(player, flyingBalanceMin)
                             // Player cannot afford cost of flying during flight?
