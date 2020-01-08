@@ -10,22 +10,22 @@ import org.bukkit.scheduler.BukkitRunnable;
  */
 class ExhaustionTask extends BukkitRunnable {
     private final float exhaustion;
-    private final boolean ignore_creative;
+    private final boolean ignoreCreative;
 
-    public ExhaustionTask(float exhaustion, boolean ignore_creative) {
+    public ExhaustionTask(final float exhaustion, final boolean ignoreCreative) {
         this.exhaustion = exhaustion;
-        this.ignore_creative = ignore_creative;
+        this.ignoreCreative = ignoreCreative;
     }
 
     public void run() {
         // Iterate over each player
-        for (Player player : Bukkit.getOnlinePlayers()) {
+        for (final Player player : Bukkit.getOnlinePlayers()) {
             // Ignore player if not flying, or if in creative mode
             if (!player.isFlying() ||
-                    ((player.getGameMode() == GameMode.CREATIVE) && this.ignore_creative))
+                    ((player.getGameMode() == GameMode.CREATIVE) && ignoreCreative))
                 continue;
             // Increase exhaustion
-            player.setExhaustion(player.getExhaustion() + this.exhaustion);
+            player.setExhaustion(player.getExhaustion() + exhaustion);
         }
     }
 }
