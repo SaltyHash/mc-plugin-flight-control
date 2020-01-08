@@ -32,134 +32,136 @@ class FlightControlEventHandler implements Listener {
     private FileConfiguration config;
     private EconManager econMgr;
     // Just for speeding up some things
-    private boolean flying_allow_ascend;
-    private boolean flying_allow_descend;
-    private boolean flying_allow_sprint;
-    private double flying_balance_min;
-    private double flying_cost_on_start;
-    private double flying_cost_on_stop;
-    private double flying_cost_per_tick;
-    private float flying_exhaustion_on_fly;
-    private int flying_haste;
-    private boolean flying_ignore_creative;
-    private boolean flying_persist;
-    private int flying_ticks;
-    private int flying_time_start;
-    private int flying_time_stop;
-    private boolean flying_weather_clear;
-    private boolean flying_weather_rain;
-    private boolean flying_weather_thunder;
+    private boolean flyingAllowAscend;
+    private boolean flyingAllowDescend;
+    private boolean flyingAllowSprint;
+    private double flyingBalanceMin;
+    private double flyingCostOnStart;
+    private double flyingCostOnStop;
+    private double flyingCostPerTick;
+    private float flyingExhaustionOnFly;
+    private int flyingHaste;
+    private boolean flyingIgnoreCreative;
+    private boolean flyingPersist;
+    private int flyingTicks;
+    private int flyingTimeStart;
+    private int flyingTimeStop;
+    private boolean flyingWeatherClear;
+    private boolean flyingWeatherRain;
+    private boolean flyingWeatherThunder;
     // Map for keeping track of tasks scheduled to disable flight
-    private Map<UUID, BukkitTask> disable_flight_tasks;
+    private final Map<UUID, BukkitTask> disableFlightTasks = new HashMap<UUID, BukkitTask>();
 
-    public FlightControlEventHandler(FlightControl fc) {
+    public FlightControlEventHandler(final FlightControl fc) {
         /* Event handler for FlightControl. */
         this.fc = fc;
-        this.disable_flight_tasks = new HashMap<UUID, BukkitTask>();
-        this.reload();
+        reload();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onEntityDamage(EntityDamageEvent event) {
+    public void onEntityDamage(final EntityDamageEvent event) {
         /* Called on entity taking damage. */
         if (!(event.getEntity() instanceof Player)) return;
-        Player player = (Player) event.getEntity();
+        final Player player = (Player) event.getEntity();
         if (!player.isFlying()) return;
 
         // Ignore if in creative mode
-        if ((player.getGameMode() == GameMode.CREATIVE) && this.flying_ignore_creative) return;
+        if ((player.getGameMode() == GameMode.CREATIVE) && flyingIgnoreCreative) return;
 
-        FileConfiguration config = this.fc.getConfig();
+        final FileConfiguration config = fc.getConfig();
 
         // Disable flying on damage or while starving?
         if ((config.getBoolean("flying.disable_on_damage")
                 || ((event.getCause() == DamageCause.STARVATION))
                 && config.getBoolean("flying.disable_while_starving"))) {
             // Fire PlayerToggleFlightEvent as if player is stopping flying
-            PlayerToggleFlightEvent ptfe = new PlayerToggleFlightEvent(player, false);
-            Bukkit.getPluginManager().callEvent(ptfe);
-            if (!ptfe.isCancelled()) player.setFlying(false);
+            final PlayerToggleFlightEvent toggleFlightEvent = new PlayerToggleFlightEvent(player, false);
+            Bukkit.getPluginManager().callEvent(toggleFlightEvent);
+            if (!toggleFlightEvent.isCancelled()) player.setFlying(false);
         }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerGameModeChange(PlayerGameModeChangeEvent event) {
+    public void onPlayerGameModeChange(final PlayerGameModeChangeEvent event) {
         /* Called when a player's game mode changes. */
-        Player player = event.getPlayer();
+        final Player player = event.getPlayer();
 
         // Switching to creative mode?
         if (event.getNewGameMode() == GameMode.CREATIVE) {
             // Ignore creative mode?
-            if (this.flying_ignore_creative) {
+            if (flyingIgnoreCreative) {
                 // Charge player for time flying and stop the flying timer
-                this.econMgr.chargeForFlyingFromTimer(player, true);
-                this.econMgr.stopFlyingTimer(player);
+                econMgr.chargeForFlyingFromTimer(player, true);
+                econMgr.stopFlyingTimer(player);
 
                 // Remove haste, if caused by this plugin
-                if (this.flying_haste > 0)
+                if (flyingHaste > 0)
                     player.removePotionEffect(PotionEffectType.FAST_DIGGING);
 
                 // Cancel and remove any disable flight task for player
-                BukkitTask task = this.disable_flight_tasks.remove(player.getUniqueId());
+                final BukkitTask task = disableFlightTasks.remove(player.getUniqueId());
                 if (task != null) task.cancel();
             }
         }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerJoin(PlayerJoinEvent event) {
+    public void onPlayerJoin(final PlayerJoinEvent event) {
         /* Called on player join. */
-        Player player = event.getPlayer();
+        final Player player = event.getPlayer();
 
         // Set flight speed
-        player.setFlySpeed((float) this.config.getDouble("flying.speed"));
+        player.setFlySpeed((float) config.getDouble("flying.speed"));
 
         // Stop flying timer
-        this.econMgr.stopFlyingTimer(player);
+        econMgr.stopFlyingTimer(player);
 
         // Ignore the following if in creative mode
-        if ((player.getGameMode() == GameMode.CREATIVE) && this.flying_ignore_creative) return;
+        if ((player.getGameMode() == GameMode.CREATIVE) && flyingIgnoreCreative) return;
 
         // Check if flight mode should be enabled on join
         if (
             // Enable flight mode on join?
-                this.config.getBoolean("flight_mode.enable_on_join")
+                config.getBoolean("flight_mode.enable_on_join")
                         // Player is allowed to fly?
                         && player.hasPermission("fc.fly.allow")
                         // Charge player for enabling flight mode.  Insufficient funds?
-                        && (this.econMgr.charge(player,
-                        this.config.getDouble("flight_mode.cost.enable"), false) != 1)
+                        && (econMgr.charge(player,
+                        config.getDouble("flight_mode.cost.enable"), false) != 1)
         ) {
             // Enable flight mode
-            this.fc.setFlightMode(player, true);
+            fc.setFlightMode(player, true);
 
             // If the player is in the air, try to set them flying
             if (!player.isOnGround()) {
                 // Fire PlayerToggleFlightEvent as if player is starting to fly
-                PlayerToggleFlightEvent ptfe = new PlayerToggleFlightEvent(player, true);
-                Bukkit.getPluginManager().callEvent(ptfe);
-                player.setFlying(!ptfe.isCancelled());
+                final PlayerToggleFlightEvent toggleFlightEvent = new PlayerToggleFlightEvent(player, true);
+                Bukkit.getPluginManager().callEvent(toggleFlightEvent);
+                player.setFlying(!toggleFlightEvent.isCancelled());
             }
         }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onPlayerMove(PlayerMoveEvent event) {
+    public void onPlayerMove(final PlayerMoveEvent event) {
         /* Called when player moves. */
-        Player player = event.getPlayer();
+        final Player player = event.getPlayer();
         if (!player.isFlying()) return;
 
         // Ignore if in creative mode
-        if ((player.getGameMode() == GameMode.CREATIVE) && this.flying_ignore_creative) return;
+        if ((player.getGameMode() == GameMode.CREATIVE) && flyingIgnoreCreative) return;
 
-        double l_fm_y = event.getFrom().getY();
-        Location l_to = event.getTo().clone();
-        double l_to_y = l_to.getY();
+        final double l_fm_y = event.getFrom().getY();
+        // TODO: Clone?
+//        final Location l_to = event.getTo().clone();
+        final Location l_to = event.getTo();
+        if (l_to == null) return;
+        final double l_to_y = l_to.getY();
 
         // Ascending
         if (l_to_y > l_fm_y) {
             // Player not allowed to ascend?
-            if (!this.flying_allow_ascend) {
+            if (!flyingAllowAscend) {
                 l_to.setY(l_fm_y);
                 event.setTo(l_to);
             }
@@ -168,7 +170,7 @@ class FlightControlEventHandler implements Listener {
         // Descending
         else if (l_to_y < l_fm_y) {
             // Player not allowed to descend?
-            if (!this.flying_allow_descend) {
+            if (!flyingAllowDescend) {
                 l_to.setY(l_fm_y);
                 event.setTo(l_to);
             }
@@ -176,24 +178,24 @@ class FlightControlEventHandler implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerQuit(PlayerQuitEvent event) {
+    public void onPlayerQuit(final PlayerQuitEvent event) {
         /* Called when player leaves the server. */
         // Call PlayerToggleFlightEvent locally as if player had stopped flying
-        this.onPlayerToggleFlight(new PlayerToggleFlightEvent(event.getPlayer(), false));
+        onPlayerToggleFlight(new PlayerToggleFlightEvent(event.getPlayer(), false));
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onPlayerToggleFlight(PlayerToggleFlightEvent event) {
+    public void onPlayerToggleFlight(final PlayerToggleFlightEvent event) {
         /* Called on player flight state change. */
-        Player player = event.getPlayer();
+        final Player player = event.getPlayer();
 
         // Ignore if in creative mode
-        if ((player.getGameMode() == GameMode.CREATIVE) && this.flying_ignore_creative) return;
+        if ((player.getGameMode() == GameMode.CREATIVE) && flyingIgnoreCreative) return;
 
         // Starting to fly
         if (event.isFlying()) {
 
-            long world_time = player.getWorld().getTime();
+            final long world_time = player.getWorld().getTime();
             // Clear: 0    Rain: 1    Thunder: 2
             int world_weather = 0;
             if (player.getWorld().isThundering()) world_weather = 2;
@@ -205,20 +207,20 @@ class FlightControlEventHandler implements Listener {
                     !player.hasPermission("fc.fly.allow")
                             // Is player starving?
                             || ((player.getFoodLevel() <= 0)
-                            && this.config.getBoolean("flying.disable_while_starving"))
+                            && config.getBoolean("flying.disable_while_starving"))
                             // Is player allowed to fly at this time of day?
-                            || (world_time < this.flying_time_start)
-                            || (world_time > this.flying_time_stop)
+                            || (world_time < flyingTimeStart)
+                            || (world_time > flyingTimeStop)
                             // Is player allowed to fly in this weather?
-                            || ((world_weather == 0) && !this.flying_weather_clear)
-                            || ((world_weather == 1) && !this.flying_weather_rain)
-                            || ((world_weather == 2) && !this.flying_weather_thunder)
+                            || ((world_weather == 0) && !flyingWeatherClear)
+                            || ((world_weather == 1) && !flyingWeatherRain)
+                            || ((world_weather == 2) && !flyingWeatherThunder)
                             // Player does not have minimum required balance?
-                            || this.econMgr.insufficientFunds(player, this.flying_balance_min)
+                            || econMgr.insufficientFunds(player, flyingBalanceMin)
                             // Player cannot afford cost of flying during flight?
-                            || this.econMgr.insufficientFunds(player, this.flying_cost_per_tick)
+                            || econMgr.insufficientFunds(player, flyingCostPerTick)
                             // Charge player for flying.  Insufficient funds?
-                            || (this.econMgr.charge(player, this.flying_cost_on_start, false) == 1)
+                            || (econMgr.charge(player, flyingCostOnStart, false) == 1)
             ) {
                 // Prevent player from starting to fly
                 event.setCancelled(true);
@@ -228,29 +230,28 @@ class FlightControlEventHandler implements Listener {
             // Alright, at this point, the player is allowed to fly
 
             // Increment player exhaustion
-            player.setExhaustion(player.getExhaustion() + this.flying_exhaustion_on_fly);
+            player.setExhaustion(player.getExhaustion() + flyingExhaustionOnFly);
 
             // Increase mining speed to account for reduced mining speed
-            if (this.flying_haste > 0)
+            if (flyingHaste > 0)
                 player.addPotionEffect(new PotionEffect(
-                        PotionEffectType.FAST_DIGGING, 200, this.flying_haste - 1, true));
+                        PotionEffectType.FAST_DIGGING, 200, flyingHaste - 1, true));
 
             // Check if sprinting is allowed
-            if (!this.flying_allow_sprint && player.isSprinting())
+            if (!flyingAllowSprint && player.isSprinting())
                 player.setSprinting(false);
 
             // Schedule flight to be disabled after certain number of ticks?
-            if ((this.flying_ticks > 0) && !this.flying_persist) {
+            if ((flyingTicks > 0) && !flyingPersist) {
                 // Create new task to disable flight after given ticks
-                BukkitTask task = new DisableFlightTask(player)
-                        .runTaskLater(this.fc, (long) this.flying_ticks);
+                final BukkitTask task = new DisableFlightTask(player).runTaskLater(fc, flyingTicks);
                 // Add task to dictionary used to keep track of them
                 // so that it may be disabled in the future if necessary.
-                this.disable_flight_tasks.put(player.getUniqueId(), task);
+                disableFlightTasks.put(player.getUniqueId(), task);
             }
 
             // Start the flying timer
-            this.econMgr.startFlyingTimer(player);
+            econMgr.startFlyingTimer(player);
         }
 
         // Stopping flight
@@ -259,15 +260,15 @@ class FlightControlEventHandler implements Listener {
             if (
                 // Persistent flight is enabled?
                 //(player.getAllowFlight() && this.flying_persist)
-                    this.flying_persist
+                    flyingPersist
                             // Charge player for stopping flight.  Insufficient funds?
-                            || (this.econMgr.charge(player, this.flying_cost_on_stop, false) == 1)
+                            || (econMgr.charge(player, flyingCostOnStop, false) == 1)
             ) {
                 // Prevent player from stopping flying
                 event.setCancelled(true);
                 // If they are on the ground, move them off of it
                 if (player.isOnGround()) {
-                    Location l = player.getLocation();
+                    final Location l = player.getLocation();
                     l.setY(java.lang.Math.round(l.getY()));
                     player.teleport(l);
                 }
@@ -277,81 +278,81 @@ class FlightControlEventHandler implements Listener {
             // Alright, at this point, the player is allowed to stop flying
 
             // Charge player for time flying and stop the flying timer
-            this.econMgr.chargeForFlyingFromTimer(player, true);
-            this.econMgr.stopFlyingTimer(player);
+            econMgr.chargeForFlyingFromTimer(player, true);
+            econMgr.stopFlyingTimer(player);
 
             // Remove haste, if caused by this plugin
-            if (this.flying_haste > 0)
+            if (flyingHaste > 0)
                 player.removePotionEffect(PotionEffectType.FAST_DIGGING);
 
             // Cancel and remove any disable flight task for player
-            BukkitTask task = this.disable_flight_tasks.remove(player.getUniqueId());
+            final BukkitTask task = disableFlightTasks.remove(player.getUniqueId());
             if (task != null) task.cancel();
         }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onPlayerToggleSprint(PlayerToggleSprintEvent event) {
+    public void onPlayerToggleSprint(final PlayerToggleSprintEvent event) {
         /* Called when player toggles sprinting state. */
-        Player player = event.getPlayer();
+        final Player player = event.getPlayer();
         // Ignore creative mode
-        if ((player.getGameMode() == GameMode.CREATIVE) && this.flying_ignore_creative) return;
+        if ((player.getGameMode() == GameMode.CREATIVE) && flyingIgnoreCreative) return;
         // Prevent player from sprinting while flying if necessary
-        if (!this.flying_allow_sprint && event.getPlayer().isFlying() && event.isSprinting())
+        if (!flyingAllowSprint && event.getPlayer().isFlying() && event.isSprinting())
             event.setCancelled(true);
     }
 
     public void reload() {
         /* Reloads the event handler from the FlightControl config. */
-        this.config = this.fc.getConfig();
-        this.econMgr = this.fc.econMgr;
+        config = fc.getConfig();
+        econMgr = fc.econMgr;
 
         // Get some config values to speed stuff up
-        this.flying_allow_ascend =
-                this.config.getBoolean("flying.allow_ascend");
-        this.flying_allow_descend =
-                this.config.getBoolean("flying.allow_descend");
-        this.flying_allow_sprint =
-                this.config.getBoolean("flying.allow_sprint");
-        this.flying_balance_min =
-                this.config.getDouble("flying.balance_min");
-        this.flying_cost_on_start =
-                this.config.getDouble("flying.cost.on_start");
-        this.flying_cost_on_stop =
-                this.config.getDouble("flying.cost.on_stop");
-        this.flying_cost_per_tick =
-                this.config.getDouble("flying.cost.per_tick");
-        this.flying_exhaustion_on_fly =
-                (float) this.config.getDouble("flying.exhaustion.on_fly");
-        this.flying_haste =
-                this.config.getInt("flying.haste");
-        this.flying_ignore_creative =
-                this.config.getBoolean("flying.ignore_creative");
-        this.flying_persist =
-                this.config.getBoolean("flying.persist");
-        this.flying_ticks =
-                this.config.getInt("flying.ticks");
-        this.flying_time_start =
-                this.config.getInt("flying.time.start");
-        this.flying_time_stop =
-                this.config.getInt("flying.time.stop");
-        this.flying_weather_clear =
-                this.config.getBoolean("flying.weather.clear");
-        this.flying_weather_rain =
-                this.config.getBoolean("flying.weather.rain");
-        this.flying_weather_thunder =
-                this.config.getBoolean("flying.weather.thunder");
+        flyingAllowAscend =
+                config.getBoolean("flying.allow_ascend");
+        flyingAllowDescend =
+                config.getBoolean("flying.allow_descend");
+        flyingAllowSprint =
+                config.getBoolean("flying.allow_sprint");
+        flyingBalanceMin =
+                config.getDouble("flying.balance_min");
+        flyingCostOnStart =
+                config.getDouble("flying.cost.on_start");
+        flyingCostOnStop =
+                config.getDouble("flying.cost.on_stop");
+        flyingCostPerTick =
+                config.getDouble("flying.cost.per_tick");
+        flyingExhaustionOnFly =
+                (float) config.getDouble("flying.exhaustion.on_fly");
+        flyingHaste =
+                config.getInt("flying.haste");
+        flyingIgnoreCreative =
+                config.getBoolean("flying.ignore_creative");
+        flyingPersist =
+                config.getBoolean("flying.persist");
+        flyingTicks =
+                config.getInt("flying.ticks");
+        flyingTimeStart =
+                config.getInt("flying.time.start");
+        flyingTimeStop =
+                config.getInt("flying.time.stop");
+        flyingWeatherClear =
+                config.getBoolean("flying.weather.clear");
+        flyingWeatherRain =
+                config.getBoolean("flying.weather.rain");
+        flyingWeatherThunder =
+                config.getBoolean("flying.weather.thunder");
 
         // Cancel all disable flight tasks if told to never disable
-        if ((this.flying_ticks == 0) || this.flying_persist) {
-            for (BukkitTask task : this.disable_flight_tasks.values())
+        if ((flyingTicks == 0) || flyingPersist) {
+            for (final BukkitTask task : disableFlightTasks.values())
                 task.cancel();
-            this.disable_flight_tasks.clear();
+            disableFlightTasks.clear();
         }
 
         // Start all players flying if told to persist
-        if (this.flying_persist) {
-            for (Player player : this.fc.getServer().getOnlinePlayers()) {
+        if (flyingPersist) {
+            for (final Player player : fc.getServer().getOnlinePlayers()) {
                 if (player.getAllowFlight()) player.setFlying(true);
             }
         }
