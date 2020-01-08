@@ -22,7 +22,7 @@ class EconManager {
         // Vault not found
         if (fc.getServer().getPluginManager().getPlugin("Vault") == null)
             fc.getLogger().warning(
-                    "Economy support disabled; dependency \"Vault\" not found");
+                    "Economy support disabled; dependency \"Vault\" not found.");
             // Vault found
         else {
             final RegisteredServiceProvider<Economy> rsp =
@@ -31,7 +31,7 @@ class EconManager {
             // No economy plugin found
             if (rsp == null) {
                 fc.getLogger().warning(
-                        "Economy integration disabled; economy plugin not found");
+                        "Economy integration disabled; economy plugin not found.");
             }
             // Economy plugin found
             else {
