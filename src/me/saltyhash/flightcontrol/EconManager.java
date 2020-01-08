@@ -5,9 +5,8 @@ import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
-
-import java.util.List;
 
 /**
  * Economy manager.
@@ -16,7 +15,7 @@ class EconManager {
     private final FlightControl fc;
     private Economy econ;
 
-    public EconManager(FlightControl fc) {
+    public EconManager(final FlightControl fc) {
         this.fc = fc;
 
         // Set up economy integration
@@ -26,18 +25,17 @@ class EconManager {
                     "Economy support disabled; dependency \"Vault\" not found");
             // Vault found
         else {
-            RegisteredServiceProvider<Economy> rsp =
+            final RegisteredServiceProvider<Economy> rsp =
                     fc.getServer().getServicesManager().getRegistration(Economy.class);
+
             // No economy plugin found
-            if (rsp == null)
+            if (rsp == null) {
                 fc.getLogger().warning(
                         "Economy integration disabled; economy plugin not found");
-                // Economy plugin found
+            }
+            // Economy plugin found
             else {
-                this.econ = rsp.getProvider();
-                if (this.econ == null)
-                    fc.getLogger().warning(
-                            "Economy integration disabled; unknown reason");
+                econ = rsp.getProvider();
             }
         }
     }
@@ -46,14 +44,15 @@ class EconManager {
      * Returns the object for key in given player (null if DNE).
      */
     @SuppressWarnings("SameParameterValue")
-    private Object getMetadata(Player player, String key) {
-        List<MetadataValue> values = player.getMetadata(key);
-        for (MetadataValue value : values) {
-            if (value.getOwningPlugin().getDescription().getName().equals(
-                    fc.getDescription().getName())) {
+    private Object getMetadata(final Player player, final String key) {
+        for (final MetadataValue value : player.getMetadata(key)) {
+            final Plugin owningPlugin = value.getOwningPlugin();
+            if (owningPlugin == null) continue;
+
+            if (owningPlugin.getDescription().getName().equals(fc.getDescription().getName()))
                 return value.value();
-            }
         }
+
         return null;
     }
 
@@ -61,8 +60,8 @@ class EconManager {
      * Sets the object for key in given player.
      */
     @SuppressWarnings("SameParameterValue")
-    private void setMetadata(Player player, String key, Object object) {
-        player.setMetadata(key, new FixedMetadataValue(this.fc, object));
+    private void setMetadata(final Player player, final String key, final Object object) {
+        player.setMetadata(key, new FixedMetadataValue(fc, object));
     }
 
     /**
@@ -75,20 +74,20 @@ class EconManager {
      * 2: Failed to create account
      * 3: No economy support
      */
-    int charge(Player player, double amount, boolean force) {
-        if (!this.isEnabled()) return 3;
+    int charge(final Player player, double amount, final boolean force) {
+        if (!isEnabled()) return 3;
 
         // Make sure player has an account
-        if (!this.econ.hasAccount(player))
-            if (!this.econ.createPlayerAccount(player)) return 2;
+        if (!econ.hasAccount(player))
+            if (!econ.createPlayerAccount(player)) return 2;
 
         // Withdraw from account
         if (amount > 0.0) {
-            EconomyResponse result = this.econ.withdrawPlayer(player, amount);
+            final EconomyResponse result = econ.withdrawPlayer(player, amount);
             // Insufficient funds?
             if (!result.transactionSuccess()) {
                 // Bankrupt the player?
-                if (force) return this.charge(player, this.getBalance(player), false);
+                if (force) return charge(player, getBalance(player), false);
                     // Return insufficient funds
                 else return 1;
             }
@@ -96,7 +95,7 @@ class EconManager {
         // Deposit to account
         else if (amount < 0.0) {
             amount = -amount;
-            this.econ.depositPlayer(player, amount);
+            econ.depositPlayer(player, amount);
         }
         return 0;
     }
@@ -111,9 +110,9 @@ class EconManager {
      * 2: Failed to create account
      * 3: No economy support
      */
-    int chargeForFlying(Player player, long ticks, boolean force) {
-        double cost_per_tick = this.fc.getConfig().getDouble("flying.cost.per_tick");
-        return this.charge(player, ticks * cost_per_tick, force);
+    int chargeForFlying(final Player player, final long ticks, final boolean force) {
+        final double cost_per_tick = fc.getConfig().getDouble("flying.cost.per_tick");
+        return charge(player, ticks * cost_per_tick, force);
     }
 
     /**
@@ -127,56 +126,56 @@ class EconManager {
      * 3: No economy support
      */
     @SuppressWarnings("SameParameterValue")
-    int chargeForFlyingFromTimer(Player player, boolean force) {
-        long ticks = this.getFlyingTimer(player);
+    int chargeForFlyingFromTimer(final Player player, final boolean force) {
+        final long ticks = getFlyingTimer(player);
         if (ticks <= 0) return 0;
-        return this.chargeForFlying(player, ticks, force);
+        return chargeForFlying(player, ticks, force);
     }
 
     /**
      * Returns the player's balance.
      */
-    public double getBalance(Player player) {
-        return this.econ.getBalance(player);
+    public double getBalance(final Player player) {
+        return econ.getBalance(player);
     }
 
     /**
      * Returns the number of ticks that the player has been flying.
      */
-    public long getFlyingTimer(Player player) {
-        Long flying_timer = (Long) getMetadata(player, "flying_timer");
+    public long getFlyingTimer(final Player player) {
+        final Long flying_timer = (Long) getMetadata(player, "flying_timer");
         if (flying_timer == null || flying_timer < 0L) return 0L;
-        long ticks = fc.getTicks() - flying_timer;
+        final long ticks = fc.getTicks() - flying_timer;
         return Math.max(ticks, 0);
     }
 
     /**
      * Returns true if the player has given amount in their balance.
      */
-    public boolean hasBalance(Player player, double amount) {
+    public boolean insufficientFunds(final Player player, final double amount) {
         // TODO: This is kind of hackish -- it shouldn't return true if economy
         // TODO: is not enabled, but it does for reasons outside this class' scope.
-        return !this.isEnabled() || this.econ.has(player, amount);
+        return isEnabled() && !econ.has(player, amount);
     }
 
     /**
      * Returns true if economy integration is enabled.
      */
     public boolean isEnabled() {
-        return (this.econ != null);
+        return (econ != null);
     }
 
     /**
      * Starts the timer to keep track of how long the player is flying.
      */
-    public void startFlyingTimer(Player player) {
-        this.setMetadata(player, "flying_timer", this.fc.getTicks());
+    public void startFlyingTimer(final Player player) {
+        setMetadata(player, "flying_timer", fc.getTicks());
     }
 
     /**
      * Stops the timer keeping track of how long the player is flying.
      */
-    public void stopFlyingTimer(Player player) {
-        this.setMetadata(player, "flying_timer", -1L);
+    public void stopFlyingTimer(final Player player) {
+        setMetadata(player, "flying_timer", -1L);
     }
 }

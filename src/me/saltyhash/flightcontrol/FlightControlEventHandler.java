@@ -214,9 +214,9 @@ class FlightControlEventHandler implements Listener {
                             || ((world_weather == 1) && !this.flying_weather_rain)
                             || ((world_weather == 2) && !this.flying_weather_thunder)
                             // Player does not have minimum required balance?
-                            || !this.econMgr.hasBalance(player, this.flying_balance_min)
+                            || this.econMgr.insufficientFunds(player, this.flying_balance_min)
                             // Player cannot afford cost of flying during flight?
-                            || !this.econMgr.hasBalance(player, this.flying_cost_per_tick)
+                            || this.econMgr.insufficientFunds(player, this.flying_cost_per_tick)
                             // Charge player for flying.  Insufficient funds?
                             || (this.econMgr.charge(player, this.flying_cost_on_start, false) == 1)
             ) {
