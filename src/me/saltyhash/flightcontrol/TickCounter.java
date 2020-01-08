@@ -8,11 +8,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 class TickCounter extends BukkitRunnable {
     public long ticks;
 
-    public TickCounter(long ticks) {
+    public TickCounter(final long ticks) {
         this.ticks = ticks;
     }
 
     public void run() {
-        this.ticks += 1L;
+        ticks += 1L;
     }
 }
