@@ -151,12 +151,13 @@ class FlightControlEventHandler implements Listener {
         // Ignore if in creative mode
         if ((player.getGameMode() == GameMode.CREATIVE) && flyingIgnoreCreative) return;
 
+        // Get location info
         final Location toLocation = event.getTo();
         if (toLocation == null) return;
         final double toY = toLocation.getY();
         final double fromY = event.getFrom().getY();
 
-        // Ascending
+        // Ascending?
         if (toY > fromY) {
             // Player not allowed to ascend?
             if (!flyingAllowAscend) {
@@ -165,7 +166,7 @@ class FlightControlEventHandler implements Listener {
             }
         }
 
-        // Descending
+        // Descending?
         else if (toY < fromY) {
             // Player not allowed to descend?
             if (!flyingAllowDescend) {
