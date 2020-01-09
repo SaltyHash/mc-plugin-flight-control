@@ -17,10 +17,10 @@ class DisableFlightTask extends BukkitRunnable {
 
     public void run() {
         // Disable flight if necessary
-        if ((this.player != null) && this.player.isFlying()) {
+        if ((player != null) && player.isFlying()) {
             final PlayerToggleFlightEvent event = new PlayerToggleFlightEvent(player, false);
             Bukkit.getPluginManager().callEvent(event);
-            if (!event.isCancelled()) this.player.setFlying(false);
+            if (!event.isCancelled()) player.setFlying(false);
         }
     }
 }

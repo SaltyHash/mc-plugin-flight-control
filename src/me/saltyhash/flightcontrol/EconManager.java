@@ -162,7 +162,7 @@ class EconManager {
      * Returns true if economy integration is enabled.
      */
     public boolean isEnabled() {
-        return (econ != null);
+        return econ != null;
     }
 
     /**

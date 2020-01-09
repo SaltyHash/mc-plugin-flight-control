@@ -71,9 +71,9 @@ class FlightControlEventHandler implements Listener {
         final FileConfiguration config = fc.getConfig();
 
         // Disable flying on damage or while starving?
-        if ((config.getBoolean("flying.disable_on_damage")
-                || ((event.getCause() == DamageCause.STARVATION))
-                && config.getBoolean("flying.disable_while_starving"))) {
+        if (config.getBoolean("flying.disable_on_damage") ||
+                (config.getBoolean("flying.disable_while_starving") &&
+                        event.getCause() == DamageCause.STARVATION)) {
             // Fire PlayerToggleFlightEvent as if player is stopping flying
             final PlayerToggleFlightEvent toggleFlightEvent = new PlayerToggleFlightEvent(player, false);
             Bukkit.getPluginManager().callEvent(toggleFlightEvent);
@@ -142,14 +142,18 @@ class FlightControlEventHandler implements Listener {
         }
     }
 
+    /**
+     * Called when a player moves.
+     */
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerMove(final PlayerMoveEvent event) {
-        /* Called when player moves. */
         final Player player = event.getPlayer();
+
+        // Ignore if player isn't flying
         if (!player.isFlying()) return;
 
         // Ignore if in creative mode
-        if ((player.getGameMode() == GameMode.CREATIVE) && flyingIgnoreCreative) return;
+        if (player.getGameMode() == GameMode.CREATIVE && flyingIgnoreCreative) return;
 
         // Get location info
         final Location toLocation = event.getTo();
