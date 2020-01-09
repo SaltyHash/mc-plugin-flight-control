@@ -21,18 +21,19 @@ public class FlightControl extends JavaPlugin {
     private BukkitTask hasteTask;
     private FlightControlEventHandler eventHandler;
     private TickCounter tickCounter;
-    public EconManager econMgr;
+    EconManager econMgr;
 
-    // Usage strings
-    public static String cmd_fc_usage =
-            "FlightControl Commands:\n" +
-                    "/fc - Show FlightControl commands\n" +
-                    "/fc reload - Reload config\n" +
-                    "/fly [player] [on | off] - Toggle / set flight mode";
-    public static String cmd_fly_usage =
+    // Command usage strings
+    private static final String CMD_FC_USAGE = String.join("\n",
+            "FlightControl Commands:",
+            "/fc - Show FlightControl commands",
+            "/fc reload - Reload config",
+            "/fly [player] [on | off] - Toggle / set flight mode"
+    );
+    private static final String CMD_FLY_USAGE =
             "/fly [player] [on | off] - Toggle / set flight mode";
 
-    public long getTicks() {
+    long getTicks() {
         /* Returns the number of ticks since the plugin was loaded. */
         return tickCounter.getTicks();
     }
@@ -45,7 +46,7 @@ public class FlightControl extends JavaPlugin {
 
             // Command: "/fc"
             if (args.length == 0) {
-                sender.sendMessage(cmd_fc_usage);
+                sender.sendMessage(CMD_FC_USAGE);
                 return true;
             }
 
@@ -65,7 +66,7 @@ public class FlightControl extends JavaPlugin {
 
             // Unknown command
             else {
-                sender.sendMessage(cmd_fc_usage);
+                sender.sendMessage(CMD_FC_USAGE);
                 return true;
             }
         }
@@ -240,7 +241,7 @@ public class FlightControl extends JavaPlugin {
 
             // Unknown command
             else {
-                sender.sendMessage(cmd_fly_usage);
+                sender.sendMessage(CMD_FLY_USAGE);
                 return true;
             }
         }
@@ -303,8 +304,10 @@ public class FlightControl extends JavaPlugin {
         return null;
     }
 
-    /* Reloads the plugin config and takes appropriate action. */
-    public void reload() {
+    /**
+     * Reloads the plugin config and takes appropriate action.
+     */
+    private void reload() {
         // Reload configuration file
         saveDefaultConfig();
         reloadConfig();
@@ -343,7 +346,7 @@ public class FlightControl extends JavaPlugin {
         }
     }
 
-    public void setFlightMode(final Player player, final boolean mode) {
+    void setFlightMode(final Player player, final boolean mode) {
         /* Sets the flight mode of the player safely. */
         final FileConfiguration config = getConfig();
 

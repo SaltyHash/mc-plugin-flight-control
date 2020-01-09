@@ -11,10 +11,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 class DisableFlightTask extends BukkitRunnable {
     private final Player player;
 
-    public DisableFlightTask(final Player player) {
+    DisableFlightTask(final Player player) {
         this.player = player;
     }
 
+    @Override
     public void run() {
         // Disable flight if necessary
         if ((player != null) && player.isFlying()) {

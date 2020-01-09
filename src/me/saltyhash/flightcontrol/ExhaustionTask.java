@@ -12,7 +12,7 @@ class ExhaustionTask extends BukkitRunnable {
     private final float exhaustion;
     private final boolean ignoreCreative;
 
-    public ExhaustionTask(final float exhaustion, final boolean ignoreCreative) {
+    ExhaustionTask(final float exhaustion, final boolean ignoreCreative) {
         this.exhaustion = exhaustion;
         this.ignoreCreative = ignoreCreative;
     }

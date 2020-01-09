@@ -15,7 +15,7 @@ class EconManager {
     private final FlightControl fc;
     private Economy econ;
 
-    public EconManager(final FlightControl fc) {
+    EconManager(final FlightControl fc) {
         this.fc = fc;
 
         // Set up economy integration
@@ -110,7 +110,7 @@ class EconManager {
      * 2: Failed to create account
      * 3: No economy support
      */
-    int chargeForFlying(final Player player, final long ticks, final boolean force) {
+    private int chargeForFlying(final Player player, final long ticks, final boolean force) {
         final double cost_per_tick = fc.getConfig().getDouble("flying.cost.per_tick");
         return charge(player, ticks * cost_per_tick, force);
     }
@@ -135,14 +135,14 @@ class EconManager {
     /**
      * Returns the player's balance.
      */
-    public double getBalance(final Player player) {
+    private double getBalance(final Player player) {
         return econ.getBalance(player);
     }
 
     /**
      * Returns the number of ticks that the player has been flying.
      */
-    public long getFlyingTimer(final Player player) {
+    private long getFlyingTimer(final Player player) {
         final Long flying_timer = (Long) getMetadata(player, "flying_timer");
         if (flying_timer == null || flying_timer < 0L) return 0L;
         final long ticks = fc.getTicks() - flying_timer;
@@ -152,7 +152,7 @@ class EconManager {
     /**
      * Returns true if the player has given amount in their balance.
      */
-    public boolean insufficientFunds(final Player player, final double amount) {
+    boolean insufficientFunds(final Player player, final double amount) {
         // TODO: This is kind of hackish -- it shouldn't return true if economy
         // TODO: is not enabled, but it does for reasons outside this class' scope.
         return isEnabled() && !econ.has(player, amount);
@@ -161,21 +161,21 @@ class EconManager {
     /**
      * Returns true if economy integration is enabled.
      */
-    public boolean isEnabled() {
+    private boolean isEnabled() {
         return econ != null;
     }
 
     /**
      * Starts the timer to keep track of how long the player is flying.
      */
-    public void startFlyingTimer(final Player player) {
+    void startFlyingTimer(final Player player) {
         setMetadata(player, "flying_timer", fc.getTicks());
     }
 
     /**
      * Stops the timer keeping track of how long the player is flying.
      */
-    public void stopFlyingTimer(final Player player) {
+    void stopFlyingTimer(final Player player) {
         setMetadata(player, "flying_timer", -1L);
     }
 }

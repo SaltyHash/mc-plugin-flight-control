@@ -15,7 +15,7 @@ class HasteTask extends BukkitRunnable {
     private final boolean ignoreCreative;
     private final int ticks;
 
-    public HasteTask(final int hasteLevel, final boolean ignoreCreative, final int ticks) {
+    HasteTask(final int hasteLevel, final boolean ignoreCreative, final int ticks) {
         this.hasteLevel = hasteLevel;
         this.ignoreCreative = ignoreCreative;
         this.ticks = ticks;

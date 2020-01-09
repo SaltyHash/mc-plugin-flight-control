@@ -54,9 +54,9 @@ class FlightControlEventHandler implements Listener {
     /**
      * Map for keeping track of tasks scheduled to disable flight
      */
-    private final Map<UUID, BukkitTask> disableFlightTasks = new HashMap<UUID, BukkitTask>();
+    private final Map<UUID, BukkitTask> disableFlightTasks = new HashMap<>();
 
-    public FlightControlEventHandler(final FlightControl fc) {
+    FlightControlEventHandler(final FlightControl fc) {
         this.fc = fc;
         reload();
     }
@@ -326,7 +326,7 @@ class FlightControlEventHandler implements Listener {
     /**
      * Reloads the event handler from the FlightControl config.
      */
-    public void reload() {
+    void reload() {
         config = fc.getConfig();
         econMgr = fc.econMgr;
 
