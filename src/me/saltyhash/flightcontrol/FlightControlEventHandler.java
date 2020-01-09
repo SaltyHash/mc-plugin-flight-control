@@ -31,6 +31,7 @@ class FlightControlEventHandler implements Listener {
     private final FlightControl fc;
     private FileConfiguration config;
     private EconManager econMgr;
+
     // Just for speeding up some things
     private boolean flyingAllowAscend;
     private boolean flyingAllowDescend;
@@ -49,24 +50,29 @@ class FlightControlEventHandler implements Listener {
     private boolean flyingWeatherClear;
     private boolean flyingWeatherRain;
     private boolean flyingWeatherThunder;
-    // Map for keeping track of tasks scheduled to disable flight
+
+    /**
+     * Map for keeping track of tasks scheduled to disable flight
+     */
     private final Map<UUID, BukkitTask> disableFlightTasks = new HashMap<UUID, BukkitTask>();
 
     public FlightControlEventHandler(final FlightControl fc) {
-        /* Event handler for FlightControl. */
         this.fc = fc;
         reload();
     }
 
+    /**
+     * Called when an entity take damage.
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDamage(final EntityDamageEvent event) {
-        /* Called on entity taking damage. */
+        // Ignore if the entity is not a flying player
         if (!(event.getEntity() instanceof Player)) return;
         final Player player = (Player) event.getEntity();
         if (!player.isFlying()) return;
 
         // Ignore if in creative mode
-        if ((player.getGameMode() == GameMode.CREATIVE) && flyingIgnoreCreative) return;
+        if (player.getGameMode() == GameMode.CREATIVE && flyingIgnoreCreative) return;
 
         final FileConfiguration config = fc.getConfig();
 
@@ -81,9 +87,11 @@ class FlightControlEventHandler implements Listener {
         }
     }
 
+    /**
+     * Called when a player's game mode changes.
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerGameModeChange(final PlayerGameModeChangeEvent event) {
-        /* Called when a player's game mode changes. */
         final Player player = event.getPlayer();
 
         // Switching to creative mode?
@@ -105,9 +113,11 @@ class FlightControlEventHandler implements Listener {
         }
     }
 
+    /**
+     * Called when a player joins the game.
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerJoin(final PlayerJoinEvent event) {
-        /* Called on player join. */
         final Player player = event.getPlayer();
 
         // Set flight speed
@@ -180,16 +190,20 @@ class FlightControlEventHandler implements Listener {
         }
     }
 
+    /**
+     * Called when a player leaves the server.
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerQuit(final PlayerQuitEvent event) {
-        /* Called when player leaves the server. */
         // Call PlayerToggleFlightEvent locally as if player had stopped flying
         onPlayerToggleFlight(new PlayerToggleFlightEvent(event.getPlayer(), false));
     }
 
+    /**
+     * Called when a player's flight state changes.
+     */
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerToggleFlight(final PlayerToggleFlightEvent event) {
-        /* Called on player flight state change. */
         final Player player = event.getPlayer();
 
         // Ignore if in creative mode
@@ -294,60 +308,49 @@ class FlightControlEventHandler implements Listener {
         }
     }
 
+    /**
+     * Called when a player toggles sprinting state.
+     */
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerToggleSprint(final PlayerToggleSprintEvent event) {
-        /* Called when player toggles sprinting state. */
         final Player player = event.getPlayer();
+
         // Ignore creative mode
         if ((player.getGameMode() == GameMode.CREATIVE) && flyingIgnoreCreative) return;
+
         // Prevent player from sprinting while flying if necessary
         if (!flyingAllowSprint && event.getPlayer().isFlying() && event.isSprinting())
             event.setCancelled(true);
     }
 
+    /**
+     * Reloads the event handler from the FlightControl config.
+     */
     public void reload() {
-        /* Reloads the event handler from the FlightControl config. */
         config = fc.getConfig();
         econMgr = fc.econMgr;
 
         // Get some config values to speed stuff up
-        flyingAllowAscend =
-                config.getBoolean("flying.allow_ascend");
-        flyingAllowDescend =
-                config.getBoolean("flying.allow_descend");
-        flyingAllowSprint =
-                config.getBoolean("flying.allow_sprint");
-        flyingBalanceMin =
-                config.getDouble("flying.balance_min");
-        flyingCostOnStart =
-                config.getDouble("flying.cost.on_start");
-        flyingCostOnStop =
-                config.getDouble("flying.cost.on_stop");
-        flyingCostPerTick =
-                config.getDouble("flying.cost.per_tick");
-        flyingExhaustionOnFly =
-                (float) config.getDouble("flying.exhaustion.on_fly");
-        flyingHaste =
-                config.getInt("flying.haste");
-        flyingIgnoreCreative =
-                config.getBoolean("flying.ignore_creative");
-        flyingPersist =
-                config.getBoolean("flying.persist");
-        flyingTicks =
-                config.getInt("flying.ticks");
-        flyingTimeStart =
-                config.getInt("flying.time.start");
-        flyingTimeStop =
-                config.getInt("flying.time.stop");
-        flyingWeatherClear =
-                config.getBoolean("flying.weather.clear");
-        flyingWeatherRain =
-                config.getBoolean("flying.weather.rain");
-        flyingWeatherThunder =
-                config.getBoolean("flying.weather.thunder");
+        flyingAllowAscend = config.getBoolean("flying.allow_ascend");
+        flyingAllowDescend = config.getBoolean("flying.allow_descend");
+        flyingAllowSprint = config.getBoolean("flying.allow_sprint");
+        flyingBalanceMin = config.getDouble("flying.balance_min");
+        flyingCostOnStart = config.getDouble("flying.cost.on_start");
+        flyingCostOnStop = config.getDouble("flying.cost.on_stop");
+        flyingCostPerTick = config.getDouble("flying.cost.per_tick");
+        flyingExhaustionOnFly = (float) config.getDouble("flying.exhaustion.on_fly");
+        flyingHaste = config.getInt("flying.haste");
+        flyingIgnoreCreative = config.getBoolean("flying.ignore_creative");
+        flyingPersist = config.getBoolean("flying.persist");
+        flyingTicks = config.getInt("flying.ticks");
+        flyingTimeStart = config.getInt("flying.time.start");
+        flyingTimeStop = config.getInt("flying.time.stop");
+        flyingWeatherClear = config.getBoolean("flying.weather.clear");
+        flyingWeatherRain = config.getBoolean("flying.weather.rain");
+        flyingWeatherThunder = config.getBoolean("flying.weather.thunder");
 
         // Cancel all disable flight tasks if told to never disable
-        if ((flyingTicks == 0) || flyingPersist) {
+        if (flyingTicks == 0 || flyingPersist) {
             for (final BukkitTask task : disableFlightTasks.values())
                 task.cancel();
             disableFlightTasks.clear();
