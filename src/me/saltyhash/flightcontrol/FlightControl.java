@@ -34,7 +34,7 @@ public class FlightControl extends JavaPlugin {
 
     public long getTicks() {
         /* Returns the number of ticks since the plugin was loaded. */
-        return tickCounter.ticks;
+        return tickCounter.getTicks();
     }
 
     @Override

@@ -6,10 +6,14 @@ import org.bukkit.scheduler.BukkitRunnable;
  * Task to keep track of total ticks.
  */
 class TickCounter extends BukkitRunnable {
-    public long ticks;
+    private long ticks;
 
     public TickCounter(final long ticks) {
         this.ticks = ticks;
+    }
+
+    public long getTicks() {
+        return ticks;
     }
 
     public void run() {
