@@ -44,7 +44,7 @@ public class FlightControl extends JavaPlugin {
     @Override
     public boolean onCommand(final CommandSender sender, final Command cmd, final String label, final String[] args) {
         // Command: "fc ..."
-        if (cmd.getName().equalsIgnoreCase("fc")) {
+        if ("fc".equalsIgnoreCase(cmd.getName())) {
 
             // Command: "/fc"
             if (args.length == 0) {
@@ -53,7 +53,7 @@ public class FlightControl extends JavaPlugin {
             }
 
             // Command: "/fc reload"
-            else if (args[0].equalsIgnoreCase("reload")) {
+            else if ("reload".equalsIgnoreCase(args[0])) {
                 // Check permissions
                 if (!sender.hasPermission("fc.reload")) {
                     sender.sendMessage(ChatColor.DARK_RED +
@@ -74,7 +74,7 @@ public class FlightControl extends JavaPlugin {
         }
 
         // Command: "/fly ..."
-        else if (cmd.getName().equalsIgnoreCase("fly")) {
+        else if ("fly".equalsIgnoreCase(cmd.getName())) {
 
             // Command: "/fly"
             if (args.length == 0) {
@@ -130,7 +130,7 @@ public class FlightControl extends JavaPlugin {
             }
 
             // Command: "/fly on"
-            else if (args[0].equalsIgnoreCase("on")) {
+            else if ("on".equalsIgnoreCase(args[0])) {
                 // Must be a player
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("Must be a player");
@@ -158,7 +158,7 @@ public class FlightControl extends JavaPlugin {
             }
 
             // Command: "/fly off"
-            else if (args[0].equalsIgnoreCase("off")) {
+            else if ("off".equalsIgnoreCase(args[0])) {
                 // Must be a player
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("Must be a player");
@@ -235,7 +235,7 @@ public class FlightControl extends JavaPlugin {
             }
 
             // Command: "/fly [player] on"
-            else if (args[1].equalsIgnoreCase("on")) {
+            else if ("on".equalsIgnoreCase(args[1])) {
                 // Turn flight mode on for player
                 setFlightMode(player, true);
                 player.sendMessage("Flight mode " + ChatColor.DARK_GREEN
@@ -247,7 +247,7 @@ public class FlightControl extends JavaPlugin {
             }
 
             // Command: "/fly [player] off"
-            else if (args[1].equalsIgnoreCase("off")) {
+            else if ("off".equalsIgnoreCase(args[1])) {
                 // Turn flight mode off for player
                 player.setFallDistance(0);
                 setFlightMode(player, false);
@@ -323,7 +323,7 @@ public class FlightControl extends JavaPlugin {
         final String cmdName = command.getName();
 
         // Command: "/fc"
-        if (cmdName.equalsIgnoreCase("fc")) {
+        if ("fc".equalsIgnoreCase(cmdName)) {
             if (args.length == 0)
                 return Collections.singletonList("reload");
         }
