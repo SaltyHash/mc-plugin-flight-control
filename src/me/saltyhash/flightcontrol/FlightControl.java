@@ -38,9 +38,11 @@ public class FlightControl extends JavaPlugin {
         return tickCounter.getTicks();
     }
 
+    /**
+     * Called when a command is issued.
+     */
     @Override
     public boolean onCommand(final CommandSender sender, final Command cmd, final String label, final String[] args) {
-        /* Called when a command is issued. */
         // Command: "fc ..."
         if (cmd.getName().equalsIgnoreCase("fc")) {
 
@@ -92,12 +94,16 @@ public class FlightControl extends JavaPlugin {
                         player.sendMessage("Not allowed to disable flight mode");
                         return true;
                     }
+
                     // Charge player.  Insufficient funds?
-                    if (econMgr.charge(player,
-                            getConfig().getDouble("flight_mode.cost.disable"), false) == 1) {
+                    if (econMgr.charge(
+                            player,
+                            getConfig().getDouble("flight_mode.cost.disable")
+                    ) == 1) {
                         player.sendMessage("You cannot afford to disable flight mode");
                         return true;
                     }
+
                     setFlightMode(player, false);
                     player.sendMessage("Flight mode " + ChatColor.DARK_RED + "disabled");
                 }
@@ -109,12 +115,14 @@ public class FlightControl extends JavaPlugin {
                         player.sendMessage("Not allowed to enable flight mode");
                         return true;
                     }
+
                     // Charge player.  Insufficient funds?
                     if (econMgr.charge(player,
-                            getConfig().getDouble("flight_mode.cost.enable"), false) == 1) {
+                            getConfig().getDouble("flight_mode.cost.enable")) == 1) {
                         player.sendMessage("You cannot afford to enable flight mode");
                         return true;
                     }
+
                     setFlightMode(player, true);
                     player.sendMessage("Flight mode " + ChatColor.DARK_GREEN + "enabled");
                 }
@@ -129,17 +137,20 @@ public class FlightControl extends JavaPlugin {
                     return true;
                 }
                 final Player player = (Player) sender;
+
                 // Check permissions
                 if (!player.hasPermission("fc.fly.enable")) {
                     player.sendMessage("Not allowed to enable flight mode");
                     return true;
                 }
+
                 // Charge player.  Insufficient funds?
                 if (econMgr.charge(player,
-                        getConfig().getDouble("flight_mode.cost.enable"), false) == 1) {
+                        getConfig().getDouble("flight_mode.cost.enable")) == 1) {
                     player.sendMessage("You cannot afford to enable flight mode");
                     return true;
                 }
+
                 // Turn flight mode on
                 setFlightMode(player, true);
                 player.sendMessage("Flight mode " + ChatColor.DARK_GREEN + "enabled");
@@ -154,17 +165,20 @@ public class FlightControl extends JavaPlugin {
                     return true;
                 }
                 final Player player = (Player) sender;
+
                 // Check permissions
                 if (!player.hasPermission("fc.fly.disable")) {
                     player.sendMessage("Not allowed to disable flight mode");
                     return true;
                 }
+
                 // Charge player.  Insufficient funds?
                 if (econMgr.charge(player,
-                        getConfig().getDouble("flight_mode.cost.disable"), false) == 1) {
+                        getConfig().getDouble("flight_mode.cost.disable")) == 1) {
                     player.sendMessage("You cannot afford to disable flight mode");
                     return true;
                 }
+
                 // Turn flight mode off
                 setFlightMode(player, false);
                 player.sendMessage("Flight mode " + ChatColor.DARK_RED + "disabled");
@@ -177,18 +191,21 @@ public class FlightControl extends JavaPlugin {
                 sender.sendMessage("Not allowed to change flight mode of other players");
                 return true;
             }
+
             // Get player specified in command
             Player player = null;
-            final String player_name = args[0];
+            final String playerName = args[0];
+
             // Iterate over each player
             final Player[] players = getServer().getOnlinePlayers().toArray(new Player[0]);
             for (final Player p : players) {
                 player = p;
-                if (player.getName().equalsIgnoreCase(player_name)) break;
+                if (player.getName().equalsIgnoreCase(playerName)) break;
             }
+
             // Player offline?
             if (player == null) {
-                sender.sendMessage("Player " + player_name + " is not online");
+                sender.sendMessage("Player " + playerName + " is not online");
                 return true;
             }
 
@@ -202,7 +219,7 @@ public class FlightControl extends JavaPlugin {
                     player.sendMessage("Flight mode " + ChatColor.DARK_RED
                             + "disabled" + ChatColor.RESET + " by " + sender.getName());
                     sender.sendMessage("Flight mode " + ChatColor.DARK_RED
-                            + "disabled" + ChatColor.RESET + " for " + player_name);
+                            + "disabled" + ChatColor.RESET + " for " + playerName);
                 }
                 // - Flight mode is disabled
                 else {
@@ -211,8 +228,9 @@ public class FlightControl extends JavaPlugin {
                     player.sendMessage("Flight mode " + ChatColor.DARK_GREEN
                             + "enabled" + ChatColor.RESET + " by " + sender.getName());
                     sender.sendMessage("Flight mode " + ChatColor.DARK_GREEN
-                            + "enabled" + ChatColor.RESET + " for " + player_name);
+                            + "enabled" + ChatColor.RESET + " for " + playerName);
                 }
+
                 return true;
             }
 
@@ -223,11 +241,12 @@ public class FlightControl extends JavaPlugin {
                 player.sendMessage("Flight mode " + ChatColor.DARK_GREEN
                         + "enabled" + ChatColor.RESET + " by " + sender.getName());
                 sender.sendMessage("Flight mode " + ChatColor.DARK_GREEN
-                        + "enabled" + ChatColor.RESET + " for " + player_name);
+                        + "enabled" + ChatColor.RESET + " for " + playerName);
+
                 return true;
             }
 
-            // Command: "/fly [player] off
+            // Command: "/fly [player] off"
             else if (args[1].equalsIgnoreCase("off")) {
                 // Turn flight mode off for player
                 player.setFallDistance(0);
@@ -235,7 +254,7 @@ public class FlightControl extends JavaPlugin {
                 player.sendMessage("Flight mode " + ChatColor.DARK_RED
                         + "disabled" + ChatColor.RESET + " by " + sender.getName());
                 sender.sendMessage("Flight mode " + ChatColor.DARK_RED
-                        + "disabled" + ChatColor.RESET + " for " + player_name);
+                        + "disabled" + ChatColor.RESET + " for " + playerName);
                 return true;
             }
 
@@ -249,15 +268,19 @@ public class FlightControl extends JavaPlugin {
         return false;
     }
 
+    /**
+     * Called to disable the plugin.
+     */
     @Override
     public void onDisable() {
-        /* Called on plugin disable. */
         getLogger().info("Disabled");
     }
 
+    /**
+     * Called to enable the plugin.
+     */
     @Override
     public void onEnable() {
-        /* Called on plugin enable. */
         final Server server = getServer();
         final Logger logger = getLogger();
 
@@ -290,13 +313,17 @@ public class FlightControl extends JavaPlugin {
     }
 
     @Override
-    public List<String> onTabComplete(final CommandSender sender, final Command command,
-                                      final String alias, final String[] args) {
+    public List<String> onTabComplete(
+            final CommandSender sender,
+            final Command command,
+            final String alias,
+            final String[] args
+    ) {
         /* Request a list of possible tab completions for a command argument. */
-        final String cmd_name = command.getName();
+        final String cmdName = command.getName();
 
         // Command: "/fc"
-        if (cmd_name.equalsIgnoreCase("fc")) {
+        if (cmdName.equalsIgnoreCase("fc")) {
             if (args.length == 0)
                 return Collections.singletonList("reload");
         }

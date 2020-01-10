@@ -28,7 +28,7 @@ import java.util.UUID;
  * Event handler for FlightControl.
  */
 class FlightControlEventHandler implements Listener {
-    private final FlightControl fc;
+    private final FlightControl plugin;
     private FileConfiguration config;
     private EconManager econMgr;
 
@@ -56,8 +56,8 @@ class FlightControlEventHandler implements Listener {
      */
     private final Map<UUID, BukkitTask> disableFlightTasks = new HashMap<>();
 
-    FlightControlEventHandler(final FlightControl fc) {
-        this.fc = fc;
+    FlightControlEventHandler(final FlightControl plugin) {
+        this.plugin = plugin;
         reload();
     }
 
@@ -74,7 +74,7 @@ class FlightControlEventHandler implements Listener {
         // Ignore if in creative mode
         if (player.getGameMode() == GameMode.CREATIVE && flyingIgnoreCreative) return;
 
-        final FileConfiguration config = fc.getConfig();
+        final FileConfiguration config = plugin.getConfig();
 
         // Disable flying on damage or while starving?
         if (config.getBoolean("flying.disable_on_damage") ||
@@ -99,7 +99,7 @@ class FlightControlEventHandler implements Listener {
             // Ignore creative mode?
             if (flyingIgnoreCreative) {
                 // Charge player for time flying and stop the flying timer
-                econMgr.chargeForFlyingFromTimer(player, true);
+                econMgr.chargeForFlyingFromTimer(player);
                 econMgr.stopFlyingTimer(player);
 
                 // Remove haste, if caused by this plugin
@@ -137,10 +137,10 @@ class FlightControlEventHandler implements Listener {
                         && player.hasPermission("fc.fly.allow")
                         // Charge player for enabling flight mode.  Insufficient funds?
                         && (econMgr.charge(player,
-                        config.getDouble("flight_mode.cost.enable"), false) != 1)
+                        config.getDouble("flight_mode.cost.enable")) != 1)
         ) {
             // Enable flight mode
-            fc.setFlightMode(player, true);
+            plugin.setFlightMode(player, true);
 
             // If the player is in the air, try to set them flying
             if (!player.isOnGround()) {
@@ -237,7 +237,7 @@ class FlightControlEventHandler implements Listener {
                             // Player cannot afford cost of flying during flight?
                             || econMgr.insufficientFunds(player, flyingCostPerTick)
                             // Charge player for flying.  Insufficient funds?
-                            || (econMgr.charge(player, flyingCostOnStart, false) == 1)
+                            || (econMgr.charge(player, flyingCostOnStart) == 1)
             ) {
                 // Prevent player from starting to fly
                 event.setCancelled(true);
@@ -261,7 +261,7 @@ class FlightControlEventHandler implements Listener {
             // Schedule flight to be disabled after certain number of ticks?
             if ((flyingTicks > 0) && !flyingPersist) {
                 // Create new task to disable flight after given ticks
-                final BukkitTask task = new DisableFlightTask(player).runTaskLater(fc, flyingTicks);
+                final BukkitTask task = new DisableFlightTask(player).runTaskLater(plugin, flyingTicks);
                 // Add task to dictionary used to keep track of them
                 // so that it may be disabled in the future if necessary.
                 disableFlightTasks.put(player.getUniqueId(), task);
@@ -279,7 +279,7 @@ class FlightControlEventHandler implements Listener {
                 //(player.getAllowFlight() && this.flying_persist)
                     flyingPersist
                             // Charge player for stopping flight.  Insufficient funds?
-                            || (econMgr.charge(player, flyingCostOnStop, false) == 1)
+                            || (econMgr.charge(player, flyingCostOnStop) == 1)
             ) {
                 // Prevent player from stopping flying
                 event.setCancelled(true);
@@ -295,7 +295,7 @@ class FlightControlEventHandler implements Listener {
             // Alright, at this point, the player is allowed to stop flying
 
             // Charge player for time flying and stop the flying timer
-            econMgr.chargeForFlyingFromTimer(player, true);
+            econMgr.chargeForFlyingFromTimer(player);
             econMgr.stopFlyingTimer(player);
 
             // Remove haste, if caused by this plugin
@@ -327,8 +327,8 @@ class FlightControlEventHandler implements Listener {
      * Reloads the event handler from the FlightControl config.
      */
     void reload() {
-        config = fc.getConfig();
-        econMgr = fc.econMgr;
+        config = plugin.getConfig();
+        econMgr = plugin.econMgr;
 
         // Get some config values to speed stuff up
         flyingAllowAscend = config.getBoolean("flying.allow_ascend");
@@ -358,7 +358,7 @@ class FlightControlEventHandler implements Listener {
 
         // Start all players flying if told to persist
         if (flyingPersist) {
-            for (final Player player : fc.getServer().getOnlinePlayers()) {
+            for (final Player player : plugin.getServer().getOnlinePlayers()) {
                 if (player.getAllowFlight()) player.setFlying(true);
             }
         }
